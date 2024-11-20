@@ -18,7 +18,7 @@ fi
 #python filter.py --fasttext  ${MODEL} --output_name  dclm_original --threshold 0.026
 
 echo "Begin scoring for each docs"
-conda run --live-stream -n datatrove python filter.py --input_path ${POOL_PATH}\
+conda run --live-stream -n datatrove python ./data_processing/fasttext/filter.py --input_path ${POOL_PATH}\
     --fasttext  ${FASTTEXT_MODEL_PATH}${FASTTEXT_MODEL_NAME}\
     --output_path ${OUTPUT_PATH}${FASTTEXT_MODEL_NAME}\
     --label_name "1"\
@@ -26,13 +26,13 @@ conda run --live-stream -n datatrove python filter.py --input_path ${POOL_PATH}\
 
 echo "Finish scoring for each docs, finding a threshold correspond to top 10% data..."
 
-THRESHOLD=$(python find_threshold.py --data_path  ${OUTPUT_PATH}${FASTTEXT_MODEL_NAME} --label_name "1")
+THRESHOLD=$(python ./data_processing/fasttext/find_threshold.py --data_path  ${OUTPUT_PATH}${FASTTEXT_MODEL_NAME} --label_name "1")
 echo ${THRESHOLD}
 
 THRESHOLD=$(echo ${THRESHOLD} | rev | cut -d' ' -f 1| rev)
 echo "Find the new threshold:  ${THRESHOLD}"
 
-conda run --live-stream -n datatrove python filter.py --input_path ${POOL_PATH}\
+conda run --live-stream -n datatrove python ./data_processing/fasttext/filter.py --input_path ${POOL_PATH}\
     --fasttext  ${FASTTEXT_MODEL_PATH}${FASTTEXT_MODEL_NAME}\
     --output_path ${OUTPUT_PATH}${FASTTEXT_MODEL_NAME}\
     --label_name "1"\
