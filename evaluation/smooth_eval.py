@@ -8,8 +8,9 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from tqdm import tqdm
 import torch
 import wandb
+import argparse
 os.environ["WANDB_API_KEY"] = "679aead0e14b16d2ab734bb467c193a9ef746b80"
-os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
+# os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
 parser = argparse.ArgumentParser("Smooth Eval")
 parser.add_argument("--run_name",type=str, help="wandb run name")
 parser.add_argument("--ckpt_path",type=str, help="ckpt path name")
@@ -105,23 +106,23 @@ def label_model_loss_only_output(
     model, tokenizer = load_model(model_path)
 
     if task == "arc_e":
-        dataset = load_dataset("allenai/ai2_arc","ARC-Easy", split="test",cache_dir="~/.cache/huggingface/datasets")
+        dataset = load_dataset("allenai/ai2_arc","ARC-Easy", split="test",cache_dir="~/.cache/huggingface/datasets",trust_remote_code=True)
     elif task == "mmlu":
-        dataset = load_dataset("cais/mmlu","all", split="test")
+        dataset = load_dataset("cais/mmlu","all", split="test",trust_remote_code=True)
     elif task == "lambda":
-        dataset = load_dataset("EleutherAI/lambada_openai","en", split="test")
+        dataset = load_dataset("EleutherAI/lambada_openai","en", split="test",trust_remote_code=True)
     elif task == "winogrande":
-        dataset = load_dataset("allenai/winogrande", "winogrande_s", split="validation")
+        dataset = load_dataset("allenai/winogrande", "winogrande_s", split="validation",trust_remote_code=True)
     elif task == "hellaswag":
-        dataset = load_dataset("Rowan/hellaswag", split="validation")
+        dataset = load_dataset("Rowan/hellaswag", split="validation",trust_remote_code=True)
     elif task == "siqa":
-        dataset = load_dataset("allenai/social_i_qa", split="validation")
+        dataset = load_dataset("allenai/social_i_qa", split="validation",trust_remote_code=True)
     elif task == "piqa":
-        dataset = load_dataset("ybisk/piqa", split="validation")
+        dataset = load_dataset("ybisk/piqa", split="validation",trust_remote_code=True)
     elif task == "openbookqa":
-        dataset = load_dataset("allenai/openbookqa", split="test")
+        dataset = load_dataset("allenai/openbookqa", split="test",trust_remote_code=True)
     elif task == "sciq":
-        dataset = load_dataset("allenai/sciq", split="test")
+        dataset = load_dataset("allenai/sciq", split="test",trust_remote_code=True)
     dataset = preprocess_dataset(dataset,task)
     dataset = Dataset.from_list(dataset)
     # dataset = load_dataset("json", data_files="/ssddata/ksshumab/Pretrain/arc_easy_demo.jsonl", split="train")
@@ -188,8 +189,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
 
-    ALL_NAME = "400M-6_model_pos_0_neg_mismatch_4_domaincount_40_then_dclm_16b-merge_nl_tp1_pp1_mb4_gb128_gas2"
-    wandb.init(project="Pretrain-Eval-smooth",name=f"{args.name}",id="2iov7bzz", resume="allow")
+    # ALL_NAME = "400M-6_model_pos_0_neg_mismatch_4_domaincount_40_then_dclm_16b-merge_nl_tp1_pp1_mb4_gb128_gas2"
+    wandb.init(project="Pretrain-Eval-smooth",name=f"{args.run_name}")
 
     All_loss = []
     id2ckpt = {"1": "iter_0001000", "2": "iter_0002000", "3": "iter_0003000", "4": "iter_0004000", 
@@ -201,9 +202,9 @@ if __name__ == "__main__":
     "30":"iter_0030000", "31":"iter_0031000", "32":"iter_0032000", "33":"iter_0033000", "34":"iter_0034000"}
 
     tasks = [ "arc_e", "mmlu","lambda", "winogrande", "hellaswag", "siqa", "piqa", "openbookqa", "sciq"]
-    # tasks = [ "hellaswag", "siqa", "piqa", "openbookqa", "sciq"]
+    # tasks = [ "openbookqa"]
 
-    for i in range(0,30,3):
+    for i in range(0,30):
         # if (i+1) in already:
         #     continue
         model_path=f"{args.ckpt_path}/{id2ckpt[str(i+1)]}" + "/"
@@ -212,13 +213,13 @@ if __name__ == "__main__":
     #     task = "arc_e"
             try:
                 loss = label_model_loss_only_output(task, model_path)
-                wandb.log({f"{task}" : round(loss,3), "custom_step": i+1})
+                # wandb.log({f"{task}" : round(loss,3), "custom_step": i+1})
 
             except Exception as e :
                 print(f"some error: {e}")
                 loss = 0
             # All_loss.append(loss)
-            print(f"{args.name} {id2ckpt[str(i+1)]} on task {task} has loss {loss}")
+            print(f"{args.run_name} {id2ckpt[str(i+1)]} on task {task} has loss {loss}")
 
 
 
