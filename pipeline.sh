@@ -14,7 +14,7 @@ then
     # export PATH=$PATH:/datapool/data1/storage/xiwen/kashun/Pretrain-Data-Selection/data_processing/fasttext
     # filter by fasttext model
 
-    bash ./data_processing/fasttext/fasttext_filter.sh ${FASTTEXT_NAME} /workspace/datapool/data1/storage/xiwen/kashun/FasttextModel/ /workspace/datapool/data1/storage/xiwen/kashun/Data/DCLM-refinedweb-decom-test/ /workspace/datapool/data1/storage/xiwen/kashun/Data/
+    bash ./data_processing/fasttext/fasttext_filter.sh ${FASTTEXT_NAME} /workspace/datapool/data1/storage/xiwen/kashun/FasttextModel/ /workspace/datapool/data1/storage/xiwen/kashun/Data/DCLM-refinedweb-decom/ /workspace/datapool/data1/storage/xiwen/kashun/Data/ hq
     # tokenize and merge
     cd ./Megatron-LM-NEO
     bash tokenize_merge.sh ${FASTTEXT_NAME} /workspace/datapool/data1/storage/xiwen/kashun/Data/ /workspace/datapool/data1/storage/xiwen/kashun/Pretrain-Data-Selection/Megatron-LM-NEO/data/
@@ -29,7 +29,7 @@ bash neo/scripts/pretrain_1b.sh 0 ${NODE_ADDRESS} ${FASTTEXT_NAME} ${FASTTEXT_NA
 
 
 # convert checkpoint
-CKPT_NAME=400M-${FASTTEXT_NAME}_nl_tp1_pp1_mb8_gb256_gas2
+CKPT_NAME=1B-${FASTTEXT_NAME}_nl_tp1_pp1_mb4_gb256_gas4
 
 python tools/generate_config.py --name ${FASTTEXT_NAME} \
                                 --megatron_ckpt_path /workspace/datapool/data1/storage/xiwen/kashun/checkpoints/${CKPT_NAME}/Pretrain/checkpoint \
@@ -39,7 +39,7 @@ python tools/generate_config.py --name ${FASTTEXT_NAME} \
 
 python tools/batch_convert_megatron_core_llama2hf.py --config neo/configs/${FASTTEXT_NAME}_convert_config.yaml --skip-existing
 
-for i in $(seq -f "%07g" 100 100 100)
+for i in $(seq -f "%07g" 1000 1000 30000)
 do  
     cp ../../hf_ckpt/store/special_tokens_map.json  /workspace/datapool/data1/storage/xiwen/kashun/hf_ckpt/${CKPT_NAME}/iter_${i}/
     cp ../../hf_ckpt/store/tokenization_neo.py /workspace/datapool/data1/storage/xiwen/kashun/hf_ckpt/${CKPT_NAME}/iter_${i}/
@@ -51,6 +51,6 @@ done
 
 # Evaluation
 cd ../evaluation
-conda run -n lm-eval python smooth_eval.py --run_name test --ckpt_path /workspace/datapool/data1/storage/xiwen/kashun/hf_ckpt/${CKPT_NAME}
+conda run --live-stream -n lm-eval python smooth_eval.py --run_name test --ckpt_path /workspace/datapool/data1/storage/xiwen/kashun/hf_ckpt/${CKPT_NAME}
 
 rm /workspace/datapool/data1/storage/xiwen/kashun/${NODE_ADDRESS}.txt

@@ -213,7 +213,7 @@ if __name__ == "__main__":
     #     task = "arc_e"
             try:
                 loss = label_model_loss_only_output(task, model_path)
-                # wandb.log({f"{task}" : round(loss,3), "custom_step": i+1})
+                wandb.log({f"{task}" : round(loss,3), "custom_step": i+1})
 
             except Exception as e :
                 print(f"some error: {e}")
