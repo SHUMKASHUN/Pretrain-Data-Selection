@@ -16,10 +16,11 @@ then
     VARIENT_NAME=""
 fi
 
+
 if [ $FILTER = "filter" ]
 then
     echo "Enter Fasttext Filtering"
-    bash ./data_processing/fasttext/fasttext_filter.sh ${FASTTEXT_NAME} ${HOME_PATH}/FasttextModel/ ${HOME_PATH}/DCLM-refinedweb/1B-pool-300B ${HOME_PATH}/DCLM-refinedweb/1B-${FASTTEXT_NAME}${VARIENT_NAME} ${LABEL_NAME} ${PERCENTAGE_THRESHOLD}
+    bash ./data_processing/fasttext/fasttext_filter.sh ${FASTTEXT_NAME} ${HOME_PATH}/FasttextModel/ ${HOME_PATH}/DCLM-refinedweb/400M-pool-80B ${HOME_PATH}/DCLM-refinedweb/400M-${FASTTEXT_NAME}${VARIENT_NAME}  ${LABEL_NAME}  ${PERCENTAGE_THRESHOLD}
 else
     echo "Skip Fasttext Filtering"
 fi
@@ -29,7 +30,7 @@ if [ $TOKENIZE = "tokenize" ]
 then
     echo "Enter Tokenization"
     cd ./Megatron-LM-NEO
-    bash tokenize_merge.sh 1B-${FASTTEXT_NAME}${VARIENT_NAME}  ${HOME_PATH}/DCLM-refinedweb/1B-${FASTTEXT_NAME}${VARIENT_NAME} ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/ 
+    bash tokenize_merge.sh 400M-${FASTTEXT_NAME}${VARIENT_NAME}  ${HOME_PATH}/DCLM-refinedweb/400M-${FASTTEXT_NAME}${VARIENT_NAME} ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/ 
 
 else
     echo "Skip Tokenization"
@@ -41,26 +42,25 @@ if [ $TRAIN = "train" ]
 then
     echo "Enter Training"
     # ps -ef | grep test.py | grep -v grep | awk '{print $2}' | xargs -i kill -9 {}
-    bash neo/scripts/pretrain_1b.sh 0 ${NODE_ADDRESS} ${FASTTEXT_NAME}${VARIENT_NAME} 1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HOME_PATH}
+    bash neo/scripts/pretrain_400m.sh 0 ${NODE_ADDRESS} ${FASTTEXT_NAME}${VARIENT_NAME} 400M-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HOME_PATH}
 else
     echo "Skip Training"
     # ps -ef | grep test.py | grep -v grep | awk '{print $2}' | xargs -i kill -9 {}
 fi
 
-CKPT_NAME=1B-${FASTTEXT_NAME}${VARIENT_NAME}_nl_tp1_pp1_mb4_gb256_gas8
+CKPT_NAME=400M-${FASTTEXT_NAME}${VARIENT_NAME}_nl_tp1_pp1_mb8_gb256_gas4
 
 if [ $CONVERT = "convert" ]
 then
     echo "Enter convert ckpt"
     python tools/generate_config.py --name ${FASTTEXT_NAME}${VARIENT_NAME} \
-                                    --megatron_ckpt_path /${HOME_PATH}/checkpoints/${CKPT_NAME}/Pretrain/checkpoint \
+                                    --megatron_ckpt_path ${HOME_PATH}/checkpoints/${CKPT_NAME}/Pretrain/checkpoint \
                                     --hf_ckpt_path ${HOME_PATH}/hf_ckpt/${CKPT_NAME} \
                                     --seq_len 4096 \
                                     --global_bz 256 \
-                                    --model_size 1B
-
-    python tools/batch_convert_megatron_core_llama2hf.py --config neo/configs/1B-${FASTTEXT_NAME}${VARIENT_NAME}_convert_config.yaml --skip-existing
-    for i in $(seq -f "%07g" 1000 1000 30000)
+                                    --model_size 400M
+    python tools/batch_convert_megatron_core_llama2hf.py --config neo/configs/400M-${FASTTEXT_NAME}${VARIENT_NAME}_convert_config.yaml --skip-existing
+    for i in $(seq -f "%07g" 1000 1000 8000)
     do  
         cp ../../hf_ckpt/store/special_tokens_map.json  ${HOME_PATH}/hf_ckpt/${CKPT_NAME}/iter_${i}/
         cp ../../hf_ckpt/store/tokenization_neo.py ${HOME_PATH}/hf_ckpt/${CKPT_NAME}/iter_${i}/
@@ -75,7 +75,7 @@ if [ $EVALUATE = "evaluate" ]
 then
     echo "Enter Evaluation"
     cd ../evaluation
-    conda run --live-stream -n lm-eval CUDA_VISIBLE_DEVICES=7 python smooth_eval.py --run_name 1B-${FASTTEXT_NAME}${VARIENT_NAME} --ckpt_path /data/vjuicefs_ai_gpt_nlp/72189907/hf_ckpt/${CKPT_NAME}
+    conda run --live-stream -n lm-eval CUDA_VISIBLE_DEVICES=7 python smooth_eval.py --run_name 400M-${FASTTEXT_NAME}${VARIENT_NAME} --ckpt_path ${HOME_PATH}/hf_ckpt/${CKPT_NAME}
     cd ${HOME_PATH}
     # python test.py --size 70000 --gpus 8 --interval 0.01
 else
@@ -86,3 +86,4 @@ echo "All finished"
 
 # bash pipeline_400m.sh 6_model_pos_2_neg_mismatch_5_ceval n n n n evaluate
 # bash pipeline_400m.sh 6_model_pos_15_neg_11_arce_lencontrol_3500 filter tokenize train convert evaluate 0
+# bash pipeline_400m.sh dclm_original filter tokenize train convert evaluate 0 _top30percent hq 0.5
