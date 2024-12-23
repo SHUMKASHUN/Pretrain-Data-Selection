@@ -1,21 +1,26 @@
 import os
 # os.environ['HF_DATASETS_OFFLINE ']= "1"
 # os.environ["HF_HUB_OFFLINE"] = "1"
-
+# os.environ["HF_HOME"] = "/data/vjuicefs_ai_gpt_nlp/72189907/Environment/.cache/huggingface"
 from datasets import Dataset
-from datasets import load_dataset
+from datasets import load_dataset, get_dataset_config_names
+import torch
+from torch.utils.data import DataLoader
+
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from tqdm import tqdm
-import torch
+
+import numpy as np
+
 import wandb
 import argparse
+from packed_dataset import EvalDataset
+
 os.environ["WANDB_API_KEY"] = "679aead0e14b16d2ab734bb467c193a9ef746b80"
 # os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
 parser = argparse.ArgumentParser("Smooth Eval")
 parser.add_argument("--run_name",type=str, help="wandb run name")
 parser.add_argument("--ckpt_path",type=str, help="ckpt path name")
-
-
 
 BATCH_SIZE = 16
 def preprocess_dataset(dataset,task):
@@ -80,6 +85,131 @@ def preprocess_dataset(dataset,task):
             temp["input"] = ""
             temp["output"] = "Question: " + dataset[i]["question"] + "\nAnswer: " + dataset[i]["correct_answer"]
             output_dataset.append(temp)
+    elif task == "gsm8k":
+        for i in range(0,len(dataset)):
+            temp = {}
+            temp["input"] = ""
+            temp["output"] =  "Question: " + dataset[i]["question"] + "\nAnswer: " + dataset[i]["answer"].split("####")[0].strip("\n") + "\nThe answer is " + dataset[i]["answer"].split("####")[1].strip(" ") + "."
+            output_dataset.append(temp) 
+    elif task == "math":
+        for i in range(0,len(dataset)):
+            temp = {}
+            temp["input"] = ""
+            temp["output"] =  "Question: " + dataset[i]["problem"] + "\nAnswer: " + dataset[i]["solution"]
+            output_dataset.append(temp)
+    elif task == "bbh":
+        for i in range(0,len(dataset)):
+            temp = {}
+            temp["input"] = ""
+            temp["output"] =  "Question: " + dataset[i]["input"] + "\nAnswer: "  + dataset[i]["target"]
+            output_dataset.append(temp)        
+    elif task == "humaneval":
+        for i in range(0,len(dataset)):
+            temp = {}
+            temp["input"] = ""
+            temp["output"] =  "Question: " + dataset[i]["prompt"] + "\nAnswer: " + dataset[i]["canonical_solution"]
+            output_dataset.append(temp)   
+    elif task == "mbpp":
+        for i in range(0,len(dataset)):
+            temp = {}
+            temp["input"] =  ""
+            temp["output"] ="Question: " + dataset[i]["text"] + "\nAnswer: " +  dataset[i]["code"]
+            output_dataset.append(temp) 
+    return output_dataset
+
+
+def preprocess_dataset_answer_only(dataset,task):
+    output_dataset = []
+    mapping = {"A":0,"B":1,"C":2,"D":3}
+    if task == "arc_e":
+        for i in range(0,len(dataset)):
+            temp = {}
+            temp["input"] = "Question: " + dataset[i]["question"] + "\nAnswer: "
+            temp["output"] =  dataset[i]["choices"]["text"][ dataset[i]["choices"]["label"].index(dataset[i]["answerKey"])]
+            output_dataset.append(temp)
+    elif task=="mmlu":
+        for i in range(0,len(dataset)):
+            temp = {}
+            temp["input"] = "Question: " + dataset[i]["question"] + "\nAnswer: "
+            temp["output"] =  dataset[i]["choices"][dataset[i]["answer"]]
+            output_dataset.append(temp)
+    elif task=="lambda":
+        for i in range(0,len(dataset)):
+            temp = {}
+            temp["input"] = ""
+            temp["output"] = dataset[i]["text"]
+            output_dataset.append(temp)
+    elif task=="winogrande":
+        for i in range(0,len(dataset)):
+            temp = {}
+            temp["input"] = "Question: " + dataset[i]["sentence"] + "\nAnswer: "
+            if dataset[i]["answer"] == "1":
+                temp["output"] =  dataset[i]["option1"]
+            elif dataset[i]["answer"] == "2":
+                temp["output"] =  dataset[i]["option2"]
+            output_dataset.append(temp)
+    elif task=="hellaswag":
+        for i in range(0,len(dataset)):
+            temp = {}
+            temp["input"] = ""
+            temp["output"] = dataset[i]["ctx"] + " " + dataset[i]["endings"][int(dataset[i]["label"])]
+            output_dataset.append(temp)
+    elif task =="siqa":
+        for i in range(0,len(dataset)):
+            mapping = {"1": 'answerA', "2": 'answerB', "3": 'answerC'}
+            temp = {}
+            temp["input"] = "Context: " + dataset[i]["context"] + "\nQuestion: " + dataset[i]["question"] + "\nAnswer: " 
+            temp["output"] =  dataset[i][mapping[dataset[i]["label"]]]
+            output_dataset.append(temp)
+    elif task == "piqa":
+        for i in range(0,len(dataset)):
+            mapping = {"0": 'sol1', "1": 'sol2'}
+            temp = {}
+            temp["input"] =  "Question: " + dataset[i]["goal"] + "\nAnswer: "
+            temp["output"] = dataset[i][mapping[str(dataset[i]["label"])]]
+            output_dataset.append(temp)
+    elif task =="openbookqa":
+        for i in range(0,len(dataset)):
+            temp = {}
+            temp["input"] = "Question: " + dataset[i]["question_stem"] + "\nAnswer: " 
+            temp["output"] = dataset[i]["choices"]["text"][ dataset[i]["choices"]["label"].index(dataset[i]["answerKey"])]
+            output_dataset.append(temp)
+    elif task == "sciq":
+        for i in range(0,len(dataset)):
+            temp = {}
+            temp["input"] = "Question: " + dataset[i]["question"] + "\nAnswer: "
+            temp["output"] =  dataset[i]["correct_answer"]
+            output_dataset.append(temp)
+    elif task == "gsm8k":
+        for i in range(0,len(dataset)):
+            temp = {}
+            temp["input"] = "Question: " + dataset[i]["question"] + "\nAnswer: "
+            temp["output"] =  dataset[i]["answer"].split("####")[0].strip("\n") + "\nThe answer is " + dataset[i]["answer"].split("####")[1].strip(" ") + "."
+            output_dataset.append(temp) 
+    elif task == "math":
+        for i in range(0,len(dataset)):
+            temp = {}
+            temp["input"] = "Question: " + dataset[i]["problem"] + "\nAnswer: "
+            temp["output"] =  dataset[i]["solution"]
+            output_dataset.append(temp)
+    elif task == "bbh":
+        for i in range(0,len(dataset)):
+            temp = {}
+            temp["input"] = "Question: " + dataset[i]["input"] + "\nAnswer: " 
+            temp["output"] =  dataset[i]["target"]
+            output_dataset.append(temp)        
+    elif task == "humaneval":
+        for i in range(0,len(dataset)):
+            temp = {}
+            temp["input"] = "Question: " + dataset[i]["prompt"] + "\nAnswer: "
+            temp["output"] =  dataset[i]["canonical_solution"]
+            output_dataset.append(temp)   
+    elif task == "mbpp":
+        for i in range(0,len(dataset)):
+            temp = {}
+            temp["input"] =  "Question: " + dataset[i]["text"] + "\nAnswer: "
+            temp["output"] = dataset[i]["code"]
+            output_dataset.append(temp) 
     return output_dataset
 
 
@@ -101,12 +231,12 @@ def load_model(model_path):
 
 
 def label_model_loss_only_output(
-    task, model_path
+    task, model_path, mode="answer_only"
 ):
     model, tokenizer = load_model(model_path)
 
     if task == "arc_e":
-        dataset = load_dataset("allenai/ai2_arc","ARC-Easy", split="test",cache_dir="~/.cache/huggingface/datasets",trust_remote_code=True)
+        dataset = load_dataset("allenai/ai2_arc","ARC-Easy", split="test",trust_remote_code=True)
     elif task == "mmlu":
         dataset = load_dataset("cais/mmlu","all", split="test",trust_remote_code=True)
     elif task == "lambda":
@@ -123,8 +253,59 @@ def label_model_loss_only_output(
         dataset = load_dataset("allenai/openbookqa", split="test",trust_remote_code=True)
     elif task == "sciq":
         dataset = load_dataset("allenai/sciq", split="test",trust_remote_code=True)
-    dataset = preprocess_dataset(dataset,task)
-    dataset = Dataset.from_list(dataset)
+    elif task == "gsm8k":
+        dataset = load_dataset("openai/gsm8k",'main', split="test",trust_remote_code = True)
+    elif task == "math":
+        dataset = load_dataset("lighteval/MATH",'all', split="test",trust_remote_code = True)
+    elif task == "bbh":
+        configs = ['boolean_expressions',
+            'causal_judgement',
+            'date_understanding',
+            'disambiguation_qa',
+            'dyck_languages',
+            'formal_fallacies',
+            'geometric_shapes',
+            'hyperbaton',
+            'logical_deduction_five_objects',
+            'logical_deduction_seven_objects',
+            'logical_deduction_three_objects',
+            'movie_recommendation',
+            'multistep_arithmetic_two',
+            'navigate',
+            'object_counting',
+            'penguins_in_a_table',
+            'reasoning_about_colored_objects',
+            'ruin_names',
+            'salient_translation_error_detection',
+            'snarks',
+            'sports_understanding',
+            'temporal_sequences',
+            'tracking_shuffled_objects_five_objects',
+            'tracking_shuffled_objects_seven_objects',
+            'tracking_shuffled_objects_three_objects',
+            'web_of_lies',
+            'word_sorting']
+        final_dataset = []
+        for config in configs:
+            dataset = load_dataset("lukaemon/bbh",config,split="test",trust_remote_code = True)
+            if mode == "answer_only":
+                out = preprocess_dataset_answer_only(dataset,"bbh")
+            else:
+                out = preprocess_dataset(dataset,"bbh")
+            final_dataset.extend(out)
+    elif task == "humaneval":
+        dataset = load_dataset("openai/openai_humaneval",split="test",trust_remote_code = True)
+    elif task == "mbpp":
+        dataset = load_dataset("google-research-datasets/mbpp","full",split="test",trust_remote_code = True)
+
+    if task == "bbh":
+        dataset = Dataset.from_list(final_dataset)
+    else:
+        if mode == "answer_only":
+            dataset = preprocess_dataset_answer_only(dataset,task)
+        else:
+            dataset = preprocess_dataset(dataset,task)
+        dataset = Dataset.from_list(dataset)
     # dataset = load_dataset("json", data_files="/ssddata/ksshumab/Pretrain/arc_easy_demo.jsonl", split="train")
     # preprocess and tokenize the dataset
     loss_fn = torch.nn.CrossEntropyLoss(reduction="none")
@@ -185,6 +366,46 @@ def label_model_loss_only_output(
             loss_value.extend(loss_list)
     return sum(loss_value) / len(loss_value)
 
+
+@torch.no_grad()
+def calculate_dev_loss(task, model_path):
+
+    model, tokenizer = load_model(model_path)
+    valdataset = EvalDataset(
+        task_name=task,
+        block_size=1900 + 1,
+        tokenizer=tokenizer,
+        stride=512,
+        vocab_size=tokenizer.vocab_size,
+    )
+    valdataloader = DataLoader(valdataset, batch_size=1, shuffle=False)
+
+    def cross_entropy(logits, targets, attention_mask: torch.Tensor = None):
+        logits = logits.reshape(-1, logits.size(-1))
+        targets = targets.reshape(-1)
+        if attention_mask is not None:
+            attention_mask = attention_mask.reshape(-1)
+            targets = targets.masked_fill(~attention_mask, -1)
+
+        return torch.nn.functional.cross_entropy(logits, targets, ignore_index=-1, reduction='sum')
+
+    losses = []
+    for k, (val_data, attention_mask) in enumerate(tqdm(valdataloader)):
+        input_ids = val_data[:, 0: 1900].contiguous().to("cuda")
+        targets = val_data[:, 1: 1900 + 1].contiguous().long().to("cuda")
+        attention_mask = attention_mask[:, 1: 1900 + 1].contiguous().to("cuda")
+        logits = model(input_ids).logits
+        loss = cross_entropy(logits, targets, attention_mask=attention_mask)
+        loss = loss.cpu().item()
+        losses.append(loss)
+        # print("%.8f" % loss)
+
+    out = np.array(losses).sum()
+    bpc = out / (valdataset.character_num * np.log(2)) 
+    return bpc
+
+
+
 if __name__ == "__main__":
     args = parser.parse_args()
 
@@ -200,27 +421,29 @@ if __name__ == "__main__":
     "20":"iter_0020000", "21":"iter_0021000", "22":"iter_0022000", "23":"iter_0023000", "24":"iter_0024000",
     "25":"iter_0025000", "26":"iter_0026000", "27":"iter_0027000", "28":"iter_0028000", "29":"iter_0029000",
     "30":"iter_0030000", "31":"iter_0031000", "32":"iter_0032000", "33":"iter_0033000", "34":"iter_0034000"}
+    tasks = [ "arc_e", "mmlu","lambda", "winogrande", "hellaswag", "siqa", "piqa", "openbookqa", "sciq", "gsm8k", "math", "bbh", "humaneval", "mbpp","dolma_cc", "dolma_reddit", "dolma_wiki", "dolma_stack"]
 
-    tasks = [ "arc_e", "mmlu","lambda", "winogrande", "hellaswag", "siqa", "piqa", "openbookqa", "sciq"]
-    # tasks = [ "openbookqa"]
-
+    # tasks = [ "arc_e", "mmlu","lambda", "winogrande", "hellaswag", "siqa", "piqa", "openbookqa", "sciq", "gsm8k", "math", "bbh", "humaneval", "mbpp","dolma_cc", "dolma_reddit", "dolma_wiki", "dolma_stack","vivo_worldknowledge", "vivo_code", "vivo_qa", "vivo_news", "vivo_novel", "vivo_math"]
+    modes = ["with_question", "answer_only"]
     for i in range(0,30):
         # if (i+1) in already:
         #     continue
         model_path=f"{args.ckpt_path}/{id2ckpt[str(i+1)]}" + "/"
         for task in tasks:
-    # file_path = "arc_easy_demo.jsonl"
-    #     task = "arc_e"
             try:
-                loss = label_model_loss_only_output(task, model_path)
-                wandb.log({f"{task}" : round(loss,3), "custom_step": i+1})
+                if "dolma" in task or "vivo" in task:
+                    loss = calculate_dev_loss(task, model_path)
+                    wandb.log({f"{task}" : round(loss,3), "custom_step": i+1})
+
+                else:
+                    for mode in modes:
+                        loss = label_model_loss_only_output(task, model_path,mode=mode)
+                        wandb.log({f"{task}_{mode}" : round(loss,3), "custom_step": i+1})
 
             except Exception as e :
                 print(f"some error: {e}")
                 loss = 0
             # All_loss.append(loss)
             print(f"{args.run_name} {id2ckpt[str(i+1)]} on task {task} has loss {loss}")
-
-
 
 
