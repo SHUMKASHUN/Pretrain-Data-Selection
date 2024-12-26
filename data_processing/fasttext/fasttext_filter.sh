@@ -1,6 +1,6 @@
 # example script
 # bash fasttext_pipeline.sh pos_exactorder_neg_mismatch_4 /university/Pretrain/datatrove/Fasttext-Model/ /university/DCLM-refinedweb/DCLM-refinedweb-400M-fasttext-pool-80B/ /university/DCLM-refinedweb/
-export HF_ENDPOINT=https://hf-mirror.com
+# export HF_ENDPOINT=https://hf-mirror.com
 
 FASTTEXT_MODEL_NAME=$1   ## pos_exactorder_neg_mismatch_4
 FASTTEXT_MODEL_PATH=$2  ## /university/Pretrain/datatrove/Fasttext-Model/
@@ -11,7 +11,7 @@ PERCENTAGE=$6
 
 if [ ! -f ${FASTTEXT_MODEL_PATH}/${FASTTEXT_MODEL_NAME}.bin ]; then
     echo "Fasttext Model ${FASTTEXT_MODEL_NAME} not found in ${FASTTEXT_MODEL_PATH}, start downloading"
-    wget https://hf-mirror.com/ksshumab/cluster/resolve/main/${FASTTEXT_MODEL_NAME}.bin?download=true -O ${FASTTEXT_MODEL_PATH}${FASTTEXT_MODEL_NAME}.bin
+    wget https://huggingface.co/ksshumab/cluster/resolve/main/${FASTTEXT_MODEL_NAME}.bin?download=true -O ${FASTTEXT_MODEL_PATH}${FASTTEXT_MODEL_NAME}.bin
 else
     echo "Fasttext Model ${FASTTEXT_MODEL_NAME} already exist in ${FASTTEXT_MODEL_PATH}, skip downloading"
 fi
