@@ -1,5 +1,5 @@
 #!/bin/bash
-export HOME_PATH="/data/vjuicefs_ai_gpt_nlp/72189907"
+# export HOME_PATH="/data/vjuicefs_ai_gpt_nlp/72189907"
 FASTTEXT_NAME=$1
 FILTER=$2
 TOKENIZE=$3
