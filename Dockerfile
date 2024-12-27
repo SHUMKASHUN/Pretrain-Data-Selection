@@ -13,7 +13,7 @@ RUN wget --no-check-certificate https://repo.anaconda.com/archive/Anaconda3-2024
     && bash Anaconda3-2024.10-1-Linux-x86_64.sh -b -p /root/anaconda3 \
     && rm Anaconda3-2024.10-1-Linux-x86_64.sh 
 
-ENV PATH="/root/anaconda3/bin:${PATH}"
+ENV PATH="${PATH}:/root/anaconda3/bin"
 
 
 RUN conda create -n datatrove python=3.10 -y \
