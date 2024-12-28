@@ -20,7 +20,7 @@ fi
 if [ $FILTER = "filter" ]
 then
     echo "Enter Fasttext Filtering"
-    bash ./data_processing/fasttext/fasttext_filter.sh ${FASTTEXT_NAME} ${HOME_PATH}/FasttextModel/ ${HDFS_PATH}/DCLM-refinedweb/1B-pool-300B ${HDFS_PATH}/DCLM-refinedweb/1B-${FASTTEXT_NAME}${VARIENT_NAME} ${LABEL_NAME} ${PERCENTAGE_THRESHOLD}
+    bash ./data_processing/fasttext/fasttext_filter.sh ${FASTTEXT_NAME} ${HDFS_PATH}/FasttextModel/ ${HDFS_PATH}/DCLM-refinedweb/1B-pool-300B ${HDFS_PATH}/DCLM-refinedweb/1B-${FASTTEXT_NAME}${VARIENT_NAME} ${LABEL_NAME} ${PERCENTAGE_THRESHOLD}
 else
     echo "Skip Fasttext Filtering"
 fi
