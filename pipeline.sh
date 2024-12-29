@@ -1,5 +1,5 @@
 #!/bin/bash
-HOME_PATH="opt/tiger"
+HOME_PATH="/opt/tiger"
 FASTTEXT_NAME=$1
 FILTER=$2
 TOKENIZE=$3
