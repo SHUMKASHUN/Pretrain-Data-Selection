@@ -54,7 +54,7 @@ if [ $CONVERT = "convert" ]
 then
     echo "Enter convert ckpt"
     python tools/generate_config.py --name ${FASTTEXT_NAME}${VARIENT_NAME} \
-                                    --megatron_ckpt_path /${HDFS_PATH}/checkpoints/${CKPT_NAME}/Pretrain/checkpoint \
+                                    --megatron_ckpt_path ${HDFS_PATH}/checkpoints/${CKPT_NAME}/Pretrain/checkpoint \
                                     --hf_ckpt_path ${HDFS_PATH}/hf_ckpt/${CKPT_NAME} \
                                     --seq_len 4096 \
                                     --global_bz 256 \
