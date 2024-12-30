@@ -76,7 +76,7 @@ if [ $EVALUATE = "evaluate" ]
 then
     echo "Enter Evaluation"
     cd ../evaluation
-    conda run --live-stream -n lm-eval CUDA_VISIBLE_DEVICES=7 python smooth_eval.py --run_name 1B-${FASTTEXT_NAME}${VARIENT_NAME} --ckpt_path ${ ${HDFS_PATH}}/hf_ckpt/${CKPT_NAME}
+    conda run --live-stream -n lm-eval CUDA_VISIBLE_DEVICES=7 python smooth_eval.py --run_name 1B-${FASTTEXT_NAME}${VARIENT_NAME} --ckpt_path ${HDFS_PATH}/hf_ckpt/${CKPT_NAME}
     cd ${HOME_PATH}
     # python test.py --size 70000 --gpus 8 --interval 0.01
 else
