@@ -1,3 +1,5 @@
 /logs
 */wandb
 output.log
+# python related
+*.pyc
