@@ -46,7 +46,7 @@ if [ $TRAIN = "train" ]
 then
     echo "Enter Training"
     # ps -ef | grep test.py | grep -v grep | awk '{print $2}' | xargs -i kill -9 {}
-    bash neo/scripts/pretrain_1b.sh 0 ${NODE_ADDRESS} ${FASTTEXT_NAME}${VARIENT_NAME} 1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HDFS_PATH}
+    bash neo/scripts/pretrain_1b.sh 0 ${NODE_ADDRESS} ${FASTTEXT_NAME}${VARIENT_NAME} 1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HDFS_PATH} ${HOME_PATH}
 else
     echo "Skip Training"
     # ps -ef | grep test.py | grep -v grep | awk '{print $2}' | xargs -i kill -9 {}
