@@ -88,6 +88,17 @@ model2benchmark = {
                                     },                                  
 }
 
+all_data = {}
+for i in range(0,16):
+
+    with open(f"./bpc_calculation_16/{i}.json", "r") as f:
+        for line in f:
+            data = json.loads(line)
+            if data["id"] not in all_data:
+                all_data[data["id"]] = data["text"]
+            else:
+                raise ValueError("Duplicate ID")
+
 
 def correct_order(model2loss, model2benchmark):
     if len(model2loss) < 6:
@@ -124,37 +135,67 @@ def wrong_order(model2loss, model2brnchmark, key):
     else:
         return False
 
+TASK="arc_e"
+id2score = {}
+for id in id2model2loss.keys():
+    if len(id2model2loss[id]) < len(model_list):
+        continue    
+    score = 0
+    for i in range(0, len(model_list)):
+        for j in range(i+1, len(model_list)):
+            if model2benchmark[model_list[i]][TASK] > model2benchmark[model_list[j]][TASK]:
+                if id2model2loss[id][model_list[i]] < id2model2loss[id][model_list[j]]:
+                    score += 1
+
+                    
+            elif model2benchmark[model_list[i]][TASK] < model2benchmark[model_list[j]][TASK]:
+                if id2model2loss[id][model_list[i]] > id2model2loss[id][model_list[j]]:
+                    score += 1
+    id2score[id] = score
+
+sorted_id2score = sorted(id2score.items(), key=lambda x: x[1], reverse=True)
+
+
+# correct_order_id = []
+# count = 0
+# for id in id2model2loss.keys():
+#     if correct_order(id2model2loss[id], model2benchmark):
+#         correct_order_id.append(id)
+#     count += 1
+#     if (count % 100000 == 0):
+#         print(f"{count} finished")  
+# print(len(correct_order_id))
+
+# wrong_order_id = []
+# count = 0
+# for id in id2model2loss.keys():
+#     if wrong_order(id2model2loss[id], model2benchmark, "arc_e"):
+#         wrong_order_id.append(id)
+#     count += 1
+#     if (count % 100000 == 0):
+#         print(f"{count} finished")
+# print(len(wrong_order_id))
 
 correct_order_id = []
-count = 0
-for id in id2model2loss.keys():
-    if correct_order(id2model2loss[id], model2benchmark):
-        correct_order_id.append(id)
-    count += 1
-    if (count % 100000 == 0):
-        print(f"{count} finished")  
-print(len(correct_order_id))
-
 wrong_order_id = []
-count = 0
-for id in id2model2loss.keys():
-    if wrong_order(id2model2loss[id], model2benchmark, "arc_e"):
-        wrong_order_id.append(id)
-    count += 1
-    if (count % 100000 == 0):
-        print(f"{count} finished")
-print(len(wrong_order_id))
 
-all_data = {}
-for i in range(0,16):
+for i in range(0, len(sorted_id2score)):
+    if sorted_id2score[i][1] == 15:
+        correct_order_id.append(sorted_id2score[i][0])
+    elif sorted_id2score[i][1] <= 12:
+        wrong_order_id.append(sorted_id2score[i][0])
 
-    with open(f"./bpc_calculation_16/{i}.json", "r") as f:
-        for line in f:
-            data = json.loads(line)
-            if data["id"] not in all_data:
-                all_data[data["id"]] = data["text"]
-            else:
-                raise ValueError("Duplicate ID")
+
+# all_data = {}
+# for i in range(0,16):
+
+#     with open(f"./bpc_calculation_16/{i}.json", "r") as f:
+#         for line in f:
+#             data = json.loads(line)
+#             if data["id"] not in all_data:
+#                 all_data[data["id"]] = data["text"]
+#             else:
+#                 raise ValueError("Duplicate ID")
 
 
 data_positive = []
@@ -175,8 +216,8 @@ with open("./fasttext_train.txt","w") as f:
 import fasttext
 model = fasttext.train_supervised(
     input="./fasttext_train.txt",
-    epoch=3,
-    lr=0.1,
+    # epoch=3,
+    # lr=0.1,
     wordNgrams=2,
 )
 
