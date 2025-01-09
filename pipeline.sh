@@ -63,7 +63,9 @@ else
     # ps -ef | grep test.py | grep -v grep | awk '{print $2}' | xargs -i kill -9 {}
 fi
 
-hdfs dfs -rm hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt
+# hdfs dfs -rm hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt
+
+rm /mnt/hdfs/byte_tiktok_aiic/user/huangyuzhen/data_selection/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt
 
 CKPT_NAME=1B-${FASTTEXT_NAME}${VARIENT_NAME}_nl_tp1_pp1_mb4_gb256_gas2
 
