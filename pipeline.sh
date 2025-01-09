@@ -11,8 +11,8 @@ VARIENT_NAME=$8
 LABEL_NAME=$9
 PERCENTAGE_THRESHOLD=${10}
 HDFS_PATH=${11}
-
-
+N_NODE=${12}
+TRAINING_STEPS=${13}
 export WANDB_OFFICIAL=1
 export WANDB_API_KEY="679aead0e14b16d2ab734bb467c193a9ef746b80"
 
@@ -45,8 +45,15 @@ fi
 if [ $TRAIN = "train" ]
 then
     echo "Enter Training"
+    cp -r ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HDFS_PATH}/data/
+    touch ${HDFS_PATH}/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt
     # ps -ef | grep test.py | grep -v grep | awk '{print $2}' | xargs -i kill -9 {}
-    bash neo/scripts/pretrain_1b.sh 0 ${NODE_ADDRESS} ${FASTTEXT_NAME}${VARIENT_NAME} 1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HDFS_PATH} ${HOME_PATH}
+    if [ N_NODE = "1" ]
+    then
+        bash neo/scripts/pretrain_1b.sh 0 ${NODE_ADDRESS} ${FASTTEXT_NAME}${VARIENT_NAME} 1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HDFS_PATH} ${HOME_PATH}
+    else
+        bash neo/scripts/pretrain_1b_multi.sh ${N_NODE} 0 ${FASTTEXT_NAME}${VARIENT_NAME} 1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HDFS_PATH} ${HOME_PATH} ${TRAINING_STEPS}
+    fi
 else
     echo "Skip Training"
     # ps -ef | grep test.py | grep -v grep | awk '{print $2}' | xargs -i kill -9 {}
