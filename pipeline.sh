@@ -45,9 +45,12 @@ fi
 if [ $TRAIN = "train" ]
 then
     echo "Enter Training"
-    hdfs dfs -put ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/
+
+    cp -r ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge /mnt/hdfs/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/
+    # hdfs dfs -put ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/
     touch ${HOME_PATH}/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt
-    hdfs dfs -put ${HOME_PATH}/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt  hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/
+    # hdfs dfs -put ${HOME_PATH}/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt  hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/
+    cp ${HOME_PATH}/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt /mnt/hdfs/byte_tiktok_aiic/user/huangyuzhen/data_selection/
     # ps -ef | grep test.py | grep -v grep | awk '{print $2}' | xargs -i kill -9 {}
     if [ N_NODE = "1" ]
     then
@@ -60,9 +63,9 @@ else
     # ps -ef | grep test.py | grep -v grep | awk '{print $2}' | xargs -i kill -9 {}
 fi
 
-hdfs -dfs -rm hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt
+hdfs dfs -rm hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt
 
-CKPT_NAME=1B-${FASTTEXT_NAME}${VARIENT_NAME}_nl_tp1_pp1_mb4_gb256_gas8
+CKPT_NAME=1B-${FASTTEXT_NAME}${VARIENT_NAME}_nl_tp1_pp1_mb4_gb256_gas2
 
 if [ $CONVERT = "convert" ]
 then
@@ -75,7 +78,7 @@ then
                                     --model_size 1B
 
     python tools/batch_convert_megatron_core_llama2hf.py --config neo/configs/1B-${FASTTEXT_NAME}${VARIENT_NAME}_convert_config.yaml --skip-existing
-    for i in $(seq -f "%07g" 1000 1000 30000)
+    for i in $(seq -f "%07g" 1000 1000 ${TRAINING_STEPS})
     do  
         cp ${HDFS_PATH}/hf_ckpt/store/special_tokens_map.json  ${HDFS_PATH}/hf_ckpt/${CKPT_NAME}/iter_${i}/
         cp ${HDFS_PATH}/hf_ckpt/store/tokenization_neo.py ${HDFS_PATH}/hf_ckpt/${CKPT_NAME}/iter_${i}/
