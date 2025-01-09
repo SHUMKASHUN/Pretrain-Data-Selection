@@ -45,8 +45,9 @@ fi
 if [ $TRAIN = "train" ]
 then
     echo "Enter Training"
-    cp -r ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HDFS_PATH}/data/
-    touch ${HDFS_PATH}/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt
+    hdfs dfs -put ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/
+    touch ${HOME_PATH}/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt
+    hdfs dfs -put ${HOME_PATH}/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt  hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/
     # ps -ef | grep test.py | grep -v grep | awk '{print $2}' | xargs -i kill -9 {}
     if [ N_NODE = "1" ]
     then
@@ -58,6 +59,8 @@ else
     echo "Skip Training"
     # ps -ef | grep test.py | grep -v grep | awk '{print $2}' | xargs -i kill -9 {}
 fi
+
+hdfs -dfs -rm hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt
 
 CKPT_NAME=1B-${FASTTEXT_NAME}${VARIENT_NAME}_nl_tp1_pp1_mb4_gb256_gas8
 
