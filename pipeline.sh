@@ -48,12 +48,15 @@ then
     # FIXME change back
 
     # cp -r ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge /mnt/hdfs/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/
-    cp -r /mnt/hdfs/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/
-
+    # cp -r /mnt/hdfs/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/
+    mkdir -p ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge
+    # hdfs dfs -get hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/
     # hdfs dfs -put ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/
+    echo "finish copy data"
     touch ${HOME_PATH}/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt
     # hdfs dfs -put ${HOME_PATH}/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt  hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/
     cp ${HOME_PATH}/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt /mnt/hdfs/byte_tiktok_aiic/user/huangyuzhen/data_selection/
+    echo "create file lock"
     # ps -ef | grep test.py | grep -v grep | awk '{print $2}' | xargs -i kill -9 {}
     if [ N_NODE = "1" ]
     then
