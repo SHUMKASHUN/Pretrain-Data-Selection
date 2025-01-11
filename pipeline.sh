@@ -1,16 +1,16 @@
 #!/bin/bash
 HOME_PATH="/opt/tiger"
-FASTTEXT_NAME=$1
+export FASTTEXT_NAME=$1
 FILTER=$2
 TOKENIZE=$3
 TRAIN=$4
 CONVERT=$5
 EVALUATE=$6
 NODE_ADDRESS=$7
-VARIENT_NAME=$8
+export VARIENT_NAME=$8
 LABEL_NAME=$9
 PERCENTAGE_THRESHOLD=${10}
-HDFS_PATH=${11}
+export HDFS_PATH=${11}
 N_NODE=${12}
 TRAINING_STEPS=${13}
 export WANDB_OFFICIAL=1
@@ -47,9 +47,9 @@ then
     echo "Enter Training"
     # FIXME change back
 
-    # cp -r ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge /mnt/hdfs/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/
+    hdfs dfs -put ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/
     # cp -r /mnt/hdfs/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/
-    mkdir -p ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge
+    # mkdir -p ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge
     # hdfs dfs -get hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/
     # hdfs dfs -put ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/
     echo "finish copy data"
@@ -57,6 +57,8 @@ then
     # hdfs dfs -put ${HOME_PATH}/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt  hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/
     cp ${HOME_PATH}/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt /mnt/hdfs/byte_tiktok_aiic/user/huangyuzhen/data_selection/
     echo "create file lock"
+    echo "sleep 10 mins to wait for cp data from slave nodes"
+    sleep 600
     # ps -ef | grep test.py | grep -v grep | awk '{print $2}' | xargs -i kill -9 {}
     if [ N_NODE = "1" ]
     then
@@ -73,7 +75,7 @@ fi
 
 rm /mnt/hdfs/byte_tiktok_aiic/user/huangyuzhen/data_selection/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt
 
-CKPT_NAME=1B-${FASTTEXT_NAME}${VARIENT_NAME}_nl_tp1_pp1_mb4_gb256_gas2
+CKPT_NAME=1B-${FASTTEXT_NAME}${VARIENT_NAME}_nl_tp1_pp1_mb4_gb256_gas$((8 / ${N_NODE} ))
 
 if [ $CONVERT = "convert" ]
 then
