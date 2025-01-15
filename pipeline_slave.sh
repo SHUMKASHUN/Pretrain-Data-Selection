@@ -29,8 +29,8 @@ do
                 echo "Main node finished data processing, Launch training";
                 cd ./Megatron-LM-NEO
                 
-                mkdir -p ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge
-                hdfs dfs -get hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge  ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/
+                # mkdir -p ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge
+                # hdfs dfs -get hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge  ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/
                 # cp -r /mnt/hdfs/byte _tiktok_aiic/user/huangyuzhen/data_selection/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/
                 
                 touch ${HOME_PATH}/${ARNOLD_MONITOR_3PARTY_ID}_${FASTTEXT_NAME}${VARIENT_NAME}_${ARNOLD_ID}.txt

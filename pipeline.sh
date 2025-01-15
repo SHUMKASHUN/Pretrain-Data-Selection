@@ -34,7 +34,7 @@ if [ $TOKENIZE = "tokenize" ]
 then
     echo "Enter Tokenization"
     cd ./Megatron-LM-NEO
-    bash tokenize_merge.sh 1B-${FASTTEXT_NAME}${VARIENT_NAME}  ${HDFS_PATH}/DCLM-refinedweb/1B-${FASTTEXT_NAME}${VARIENT_NAME} ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/ 
+    bash tokenize_merge.sh 1B-${FASTTEXT_NAME}${VARIENT_NAME}  ${HDFS_PATH}/DCLM-refinedweb/1B-${FASTTEXT_NAME}${VARIENT_NAME} ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/ ${HDFS_PATH}/data/
 
 else
     echo "Skip Tokenization"
@@ -46,12 +46,12 @@ if [ $TRAIN = "train" ]
 then
     echo "Enter Training"
 
-    hdfs dfs -put ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/
+    # hdfs dfs -put ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/
     # cp -r /mnt/hdfs/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/
     # mkdir -p ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge
     # hdfs dfs -get hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/
     # hdfs dfs -put ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/
-    echo "finish copy data"
+    echo "Main node finish upload tokenized data to HDFS"
     touch ${HOME_PATH}/${ARNOLD_MONITOR_3PARTY_ID}_${FASTTEXT_NAME}${VARIENT_NAME}_${ARNOLD_ID}.txt
     # hdfs dfs -put ${HOME_PATH}/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt  hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/
     cp ${HOME_PATH}/${ARNOLD_MONITOR_3PARTY_ID}_${FASTTEXT_NAME}${VARIENT_NAME}_${ARNOLD_ID}.txt /mnt/hdfs/byte_tiktok_aiic/user/huangyuzhen/data_selection/
