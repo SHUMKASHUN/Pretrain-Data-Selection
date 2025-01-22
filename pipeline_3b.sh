@@ -34,7 +34,7 @@ if [ $TOKENIZE = "tokenize" ]
 then
     echo "Enter Tokenization"
     cd ./Megatron-LM-NEO
-    bash tokenize_merge.sh 1B-${FASTTEXT_NAME}${VARIENT_NAME}  ${HDFS_PATH}/DCLM-refinedweb/1B-${FASTTEXT_NAME}${VARIENT_NAME} ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/ ${HDFS_PATH}/data/
+    bash tokenize_merge.sh 3B-${FASTTEXT_NAME}${VARIENT_NAME}  ${HDFS_PATH}/DCLM-refinedweb/3B-${FASTTEXT_NAME}${VARIENT_NAME} ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/ ${HDFS_PATH}/data/
 
 else
     echo "Skip Tokenization"
@@ -54,7 +54,7 @@ then
     echo "Main node finish upload tokenized data to HDFS"
     touch ${HOME_PATH}/${ARNOLD_MONITOR_3PARTY_ID}_${FASTTEXT_NAME}${VARIENT_NAME}_${ARNOLD_ID}.txt
     # hdfs dfs -put ${HOME_PATH}/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt  hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/
-    cp ${HOME_PATH}/${ARNOLD_MONITOR_3PARTY_ID}_${FASTTEXT_NAME}${VARIENT_NAME}_${ARNOLD_ID}.txt /mnt/hdfs/byte_tiktok_aiic/user/huangyuzhen/data_selection/
+    cp ${HOME_PATH}/${ARNOLD_MONITOR_3PARTY_ID}_${FASTTEXT_NAME}${VARIENT_NAME}_${ARNOLD_ID}.txt ${HDFS_PATH}
     echo "create file lock"
 
     # ps -ef | grep test.py | grep -v grep | awk '{print $2}' | xargs -i kill -9 {}
@@ -68,9 +68,10 @@ then
             echo "Slave node finish downloading data, Launch training";
             if [ N_NODE = "1" ]
             then
-                bash neo/scripts/pretrain_1b.sh 0 ${NODE_ADDRESS} ${FASTTEXT_NAME}${VARIENT_NAME} 1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HDFS_PATH} ${HOME_PATH}
+                # bash neo/scripts/pretrain_1b.sh 0 ${NODE_ADDRESS} ${FASTTEXT_NAME}${VARIENT_NAME} 1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HDFS_PATH} ${HOME_PATH}
+                echo "Not support 1 node training for 3B model"
             else
-                bash neo/scripts/pretrain_1b_multi.sh ${N_NODE} 0 ${FASTTEXT_NAME}${VARIENT_NAME} 1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HDFS_PATH} ${HOME_PATH} ${TRAINING_STEPS}
+                bash neo/scripts/pretrain_3b_multi.sh ${N_NODE} 0 ${FASTTEXT_NAME}${VARIENT_NAME} 3B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HDFS_PATH} ${HOME_PATH} ${TRAINING_STEPS}
             fi
             break;
         fi
@@ -82,9 +83,9 @@ fi
 
 # hdfs dfs -rm hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt
 
-rm /mnt/hdfs/byte_tiktok_aiic/user/huangyuzhen/data_selection/${ARNOLD_MONITOR_3PARTY_ID}_${FASTTEXT_NAME}${VARIENT_NAME}_${ARNOLD_ID}.txt
+rm ${HDFS_PATH}/${ARNOLD_MONITOR_3PARTY_ID}_${FASTTEXT_NAME}${VARIENT_NAME}_${ARNOLD_ID}.txt
 
-CKPT_NAME=1B-${FASTTEXT_NAME}${VARIENT_NAME}_nl_tp1_pp1_mb4_gb256_gas$((8 / ${N_NODE} ))
+CKPT_NAME=3B-${FASTTEXT_NAME}${VARIENT_NAME}_nl_tp1_pp1_mb2_gb256_gas$((16 / ${N_NODE} ))
 
 if [ $CONVERT = "convert" ]
 then
@@ -94,9 +95,9 @@ then
                                     --hf_ckpt_path ${HDFS_PATH}/hf_ckpt/${CKPT_NAME} \
                                     --seq_len 4096 \
                                     --global_bz 256 \
-                                    --model_size 1B
+                                    --model_size 3B
 
-    python tools/batch_convert_megatron_core_llama2hf.py --config neo/configs/1B-${FASTTEXT_NAME}${VARIENT_NAME}_convert_config.yaml --skip-existing
+    python tools/batch_convert_megatron_core_llama2hf.py --config neo/configs/3B-${FASTTEXT_NAME}${VARIENT_NAME}_convert_config.yaml --skip-existing
     for i in $(seq -f "%07g" 1000 1000 ${TRAINING_STEPS})
     do  
         cp ${HDFS_PATH}/hf_ckpt/store/special_tokens_map.json  ${HDFS_PATH}/hf_ckpt/${CKPT_NAME}/iter_${i}/
