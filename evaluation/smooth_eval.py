@@ -422,7 +422,7 @@ if __name__ == "__main__":
     "25":"iter_0025000", "26":"iter_0026000", "27":"iter_0027000", "28":"iter_0028000", "29":"iter_0029000",
     "30":"iter_0030000", "31":"iter_0031000", "32":"iter_0032000", "33":"iter_0033000", "34":"iter_0034000"}
     tasks = [ "arc_e", "mmlu","lambda", "winogrande", "hellaswag", "siqa", "piqa", "openbookqa", "sciq", "gsm8k", "math", "bbh", "humaneval", "mbpp","dolma_cc", "dolma_reddit", "dolma_wiki", "dolma_stack"]
-
+    #task = 
     # tasks = [ "arc_e", "mmlu","lambda", "winogrande", "hellaswag", "siqa", "piqa", "openbookqa", "sciq", "gsm8k", "math", "bbh", "humaneval", "mbpp","dolma_cc", "dolma_reddit", "dolma_wiki", "dolma_stack","vivo_worldknowledge", "vivo_code", "vivo_qa", "vivo_news", "vivo_novel", "vivo_math"]
     modes = ["with_question", "answer_only"]
     for i in range(0,30):
