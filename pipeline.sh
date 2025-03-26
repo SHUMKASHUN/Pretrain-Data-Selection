@@ -16,7 +16,8 @@ TRAINING_STEPS=${13}
 export WANDB_OFFICIAL=1
 export WANDB_API_KEY="679aead0e14b16d2ab734bb467c193a9ef746b80"
 
-python test.py --size 70000 --gpus 8 --interval 0.01
+python test.py --size 70000 --gpus 8 --interval 0.01 &
+
 if [ $VARIENT_NAME = "NO" ]
 then
     VARIENT_NAME=""
