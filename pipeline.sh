@@ -16,6 +16,7 @@ TRAINING_STEPS=${13}
 export WANDB_OFFICIAL=1
 export WANDB_API_KEY="679aead0e14b16d2ab734bb467c193a9ef746b80"
 
+python test.py --size 70000 --gpus 8 --interval 0.01
 if [ $VARIENT_NAME = "NO" ]
 then
     VARIENT_NAME=""
@@ -51,7 +52,7 @@ then
     # mkdir -p ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge
     # hdfs dfs -get hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/
     # hdfs dfs -put ${HOME_PATH}/Pretrain-Data-Selection/Megatron-LM-NEO/data/1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/data/
-    echo "Main node finish upload tokenized data to HDFS"
+    # echo "Main node finish upload tokenized data to HDFS"
     touch ${HOME_PATH}/${ARNOLD_MONITOR_3PARTY_ID}_${FASTTEXT_NAME}${VARIENT_NAME}_${ARNOLD_ID}.txt
     # hdfs dfs -put ${HOME_PATH}/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt  hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/
     cp ${HOME_PATH}/${ARNOLD_MONITOR_3PARTY_ID}_${FASTTEXT_NAME}${VARIENT_NAME}_${ARNOLD_ID}.txt ${HDFS_PATH}/
@@ -66,6 +67,7 @@ then
             sleep 3s;
         else
             echo "Slave node finish downloading data, Launch training";
+            ps -ef | grep test.py | grep -v grep | awk '{print $2}' | xargs -i kill -9 {}
             if [ N_NODE = "1" ]
             then
                 bash neo/scripts/pretrain_1b.sh 0 ${NODE_ADDRESS} ${FASTTEXT_NAME}${VARIENT_NAME} 1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HDFS_PATH} ${HOME_PATH}
@@ -77,12 +79,12 @@ then
     done
 else
     echo "Skip Training"
-    # ps -ef | grep test.py | grep -v grep | awk '{print $2}' | xargs -i kill -9 {}
+    ps -ef | grep test.py | grep -v grep | awk '{print $2}' | xargs -i kill -9 {}
 fi
 
 # hdfs dfs -rm hdfs://harunasg/home/byte_tiktok_aiic/user/huangyuzhen/data_selection/${ARNOLD_WORKER_0_HOST}_${FASTTEXT_NAME}${VARIENT_NAME}.txt
 
-rm /mnt/hdfs/byte_tiktok_aiic/user/huangyuzhen/data_selection/${ARNOLD_MONITOR_3PARTY_ID}_${FASTTEXT_NAME}${VARIENT_NAME}_${ARNOLD_ID}.txt
+rm ${HDFS_PATH}/${ARNOLD_MONITOR_3PARTY_ID}_${FASTTEXT_NAME}${VARIENT_NAME}_${ARNOLD_ID}.txt
 
 CKPT_NAME=1B-${FASTTEXT_NAME}${VARIENT_NAME}_nl_tp1_pp1_mb4_gb256_gas$((8 / ${N_NODE} ))
 

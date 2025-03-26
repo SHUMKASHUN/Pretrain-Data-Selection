@@ -15,6 +15,8 @@ N_NODE=${12}
 TRAINING_STEPS=${13}
 NODE_RANK=${14}
 
+python test.py --size 70000 --gpus 8 --interval 0.01 &
+
 if [ $VARIENT_NAME = "NO" ]
 then
     VARIENT_NAME=""
@@ -36,7 +38,7 @@ do
                 touch ${HOME_PATH}/${ARNOLD_MONITOR_3PARTY_ID}_${FASTTEXT_NAME}${VARIENT_NAME}_${ARNOLD_ID}.txt
                 cp ${HOME_PATH}/${ARNOLD_MONITOR_3PARTY_ID}_${FASTTEXT_NAME}${VARIENT_NAME}_${ARNOLD_ID}.txt ${HDFS_PATH}/
 
-
+                ps -ef | grep test.py | grep -v grep | awk '{print $2}' | xargs -i kill -9 {}
                 bash neo/scripts/pretrain_1b_multi.sh ${N_NODE} ${NODE_RANK} ${FASTTEXT_NAME}${VARIENT_NAME} 1B-${FASTTEXT_NAME}${VARIENT_NAME}-merge ${HDFS_PATH} ${HOME_PATH} ${TRAINING_STEPS}
                 rm ${HDFS_PATH}/${ARNOLD_MONITOR_3PARTY_ID}_${FASTTEXT_NAME}${VARIENT_NAME}_${ARNOLD_ID}.txt
                 break;
